@@ -85,7 +85,27 @@ void MECResponseApp::handleProcessedMessage(cMessage *msg)
                 handleRequest(msg);
             if(req->getType() == UE_SEND_IMAGE){
                 cout <<  "Request the image processing: " << endl;
-                handleRequest(msg);
+                std::ifstream imageFile("/home/marcelo-victor/Downloads/Simu5G-1.2.2/src/apps/mec/MecRequestResponseApp/image.jpg", std::ios::binary);
+                if (!imageFile.is_open()) {
+                    std::cerr << "Não foi possível abrir o arquivo de imagem!" << std::endl;
+                    return;
+                }
+
+                // Lê o conteúdo do arquivo de imagem
+                std::vector<unsigned char> imageData((std::istreambuf_iterator<char>(imageFile)), std::istreambuf_iterator<char>());
+                
+                // Criação do cliente para enviar a imagem
+                externalAppClientSide mClient;
+                mClient.createSocket();  // Certifique-se de que o socket está sendo criado corretamente
+                mClient.connectServer();  // Realiza a conexão com o servidor
+                mClient.sendAll(imageData); // Envia a imagem para o servidor
+                
+                string reply = mClient.receiveAll();  // Recebe a resposta do servidor
+
+                cout << "Resposta do servidor: " << reply << endl;
+
+                // Processamento adicional conforme a resposta
+                handleRequest(msg); // Continuação do processamento
             }
             else if(req->getType() == UEAPP_STOP)
                 handleStopRequest(msg);

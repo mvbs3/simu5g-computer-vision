@@ -27,6 +27,11 @@
 #define UEAPP_STOP 2
 #define UEAPP_ACK_STOP 3
 #define UE_SEND_IMAGE 4
+#include <vector>
+using std::vector;
+//#include <opencv2/opencv.hpp>
+
+#include "externalAppClientSide.h"
 
 class MECResponseApp : public MecAppBase
 {

@@ -11,6 +11,8 @@ using std::endl;
 
 #include <string>
 using std::string;
+#include <vector>
+using std::vector;
 
 #include <arpa/inet.h>
 #include <stdio.h>
@@ -29,7 +31,7 @@ class externalAppClientSide {
         void connectServer();
         int closeSocket();
          
-        void sendAll(string str);
+        void sendAll(std::vector<unsigned char>& data);  // Alteração aqui        
         void sendSignal(string signal);
         string receiveAll();
         string receiveSignal();

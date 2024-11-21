@@ -258,7 +258,8 @@ void UERequestApp::handleAckStopMECRequestApp(cMessage* msg)
 void UERequestApp::sendRequest()
 {
     EV << "UERequestApp::sendRequest()" << endl;
-    inet::Packet* pkt = new inet::Packet("RequestResponseAppPacket");
+    //inet::Packet* pkt = new inet::Packet("RequestResponseAppPacket");
+    inet::Packet* pkt = new inet::Packet("RequestResponseImgProcessing");
     auto req = inet::makeShared<RequestResponseAppPacket>();
     //req->setType(UEAPP_REQUEST);
     req->setType(UE_SEND_IMAGE);
