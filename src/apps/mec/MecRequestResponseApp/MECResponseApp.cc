@@ -24,10 +24,15 @@
 
 #include <fstream>
 #include "MECResponseApp.h"
+#include <opencv2/opencv.hpp> // Adicione esta linha para usar OpenCV
+
+#include <opencv2/videoio.hpp>
 
 Define_Module(MECResponseApp);
+using namespace cv; // Para facilitar o uso das classes do OpenCV
 
-
+int frameNumber = 0;
+cv::VideoCapture cap("/home/marcelo-victor/Downloads/Simu5G-1.2.2/BigBuckBunny_320x180.mp4");
 using namespace inet;
 using namespace omnetpp;
 using namespace std;
@@ -84,28 +89,43 @@ void MECResponseApp::handleProcessedMessage(cMessage *msg)
             if(req->getType() == UEAPP_REQUEST)
                 handleRequest(msg);
             if(req->getType() == UE_SEND_IMAGE){
-                cout <<  "Request the image processing: " << endl;
-                std::ifstream imageFile("/home/marcelo-victor/Downloads/Simu5G-1.2.2/src/apps/mec/MecRequestResponseApp/image.jpg", std::ios::binary);
-                if (!imageFile.is_open()) {
-                    std::cerr << "Não foi possível abrir o arquivo de imagem!" << std::endl;
+                 cout <<  "Request the image processing: " << endl;
+                
+                // Abrir o arquivo de vídeo (se ainda não estiver aberto)
+                if (!cap.isOpened()) {
+                    cerr << "Não foi possível abrir o arquivo de vídeo!" << endl;
                     return;
                 }
 
-                // Lê o conteúdo do arquivo de imagem
-                std::vector<unsigned char> imageData((std::istreambuf_iterator<char>(imageFile)), std::istreambuf_iterator<char>());
-                
-                // Criação do cliente para enviar a imagem
+                // Configuração do socket do cliente
                 externalAppClientSide mClient;
-                mClient.createSocket();  // Certifique-se de que o socket está sendo criado corretamente
-                mClient.connectServer();  // Realiza a conexão com o servidor
-                mClient.sendAll(imageData); // Envia a imagem para o servidor
-                
-                string reply = mClient.receiveAll();  // Recebe a resposta do servidor
+                mClient.createSocket();  // Criação do socket
+                mClient.connectServer();  // Conectar ao servidor
 
+                // Ler o próximo frame
+                cv::Mat frame;
+                cap.set(cv::CAP_PROP_POS_FRAMES, frameNumber);  // Move para o frame desejado
+                bool bSuccess = cap.read(frame); // Ler o próximo frame
+                if (!bSuccess) {
+                    cout << "Não foi possível ler o frame do vídeo." << endl;
+                    return;
+                }
+
+                // Converte o frame para vetor de bytes
+                vector<unsigned char> imageData;
+                imencode(".jpg", frame, imageData);  // Imagem codificada como JPG
+
+                // Envia os dados da imagem para o servidor
+                mClient.sendAll(imageData);
+
+                string reply = mClient.receiveAll();  // Recebe a resposta do servidor
                 cout << "Resposta do servidor: " << reply << endl;
 
-                // Processamento adicional conforme a resposta
-                handleRequest(msg); // Continuação do processamento
+                // Atualiza o índice do frame para a próxima interação
+                frameNumber++;
+
+                // Processamento adicional conforme a resposta do servidor
+                handleRequest(msg);
             }
             else if(req->getType() == UEAPP_STOP)
                 handleStopRequest(msg);

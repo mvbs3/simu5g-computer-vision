@@ -7,6 +7,10 @@ MSGC:=$(MSGC) --msg6
 # on Windows we have to link with the winsock2 library as it is no longer added
 # to the omnetpp system libraries by default (as of OMNeT++ 5.1)
 #
+
+INCLUDES += -I/usr/include/opencv4
+LIBS += -L/usr/lib -lopencv_core -lopencv_videoio -lopencv_highgui -lopencv_imgcodecs
+
 ifeq ($(PLATFORM),win32.x86_64)
   LDFLAGS += -lws2_32
   LDFLAGS += -Wl,-Xlink=-force:multiple
